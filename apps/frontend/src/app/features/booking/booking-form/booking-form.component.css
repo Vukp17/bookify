@@ -1,0 +1,97 @@
+.booking-container {
+  max-width: 800px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.step-card {
+  margin: 24px 0;
+  padding: 24px;
+}
+
+mat-card-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ticket-option {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.ticket-option small {
+  color: #666;
+}
+
+.total-section {
+  margin-top: 24px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  font-size: 16px;
+}
+
+.total-row.total {
+  font-size: 20px;
+  padding-top: 16px;
+  border-top: 2px solid #eee;
+}
+
+.total-price {
+  color: #4caf50;
+}
+
+mat-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+}
+
+.booking-summary h3 {
+  margin: 16px 0 12px 0;
+  color: #333;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.summary-row.total {
+  margin-top: 16px;
+  padding-top: 16px;
+  font-size: 20px;
+}
+
+.info-card {
+  background: #e3f2fd;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.info-card mat-icon {
+  color: #1976d2;
+}
+
+.info-card p {
+  margin: 0;
+  color: #1565c0;
+}
+
+.my-3 {
+  margin: 24px 0;
+}
+
+.mt-3 {
+  margin-top: 24px;
+}

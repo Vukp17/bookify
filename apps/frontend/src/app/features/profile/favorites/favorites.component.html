@@ -1,0 +1,63 @@
+<div class="favorites-container">
+  <h1>
+    <mat-icon>favorite</mat-icon>
+    My Favorites
+  </h1>
+
+  <app-loading *ngIf="isLoading" message="Loading your favorites..."></app-loading>
+
+  <div class="favorites-grid" *ngIf="!isLoading && favorites.length > 0">
+    <mat-card *ngFor="let event of favorites" class="favorite-card">
+      <div class="event-image" [style.background-image]="'url(' + (event.imageUrl || 'https://via.placeholder.com/400x200') + ')'">
+        <button mat-icon-button class="remove-btn" (click)="removeFavorite(event)">
+          <mat-icon>close</mat-icon>
+        </button>
+        <mat-chip class="category-chip">
+          <mat-icon>{{ event.category.icon }}</mat-icon>
+          {{ event.category.name }}
+        </mat-chip>
+      </div>
+
+      <mat-card-content>
+        <h3>{{ event.title }}</h3>
+        <p class="description">{{ event.shortDescription || event.description }}</p>
+
+        <div class="event-info">
+          <div class="info-item">
+            <mat-icon>event</mat-icon>
+            <span>{{ formatDate(event.date) }}</span>
+          </div>
+          <div class="info-item">
+            <mat-icon>location_on</mat-icon>
+            <span>{{ event.location }}</span>
+          </div>
+          <div class="info-item">
+            <mat-icon>attach_money</mat-icon>
+            <span>From ${{ event.ticketTypes[0]?.price || 0 }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-button (click)="viewEvent(event.id)">
+          <mat-icon>info</mat-icon>
+          View Details
+        </button>
+        <button mat-raised-button color="primary" [routerLink]="['/booking', event.id]">
+          <mat-icon>shopping_cart</mat-icon>
+          Book Now
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && favorites.length === 0">
+    <mat-icon>favorite_border</mat-icon>
+    <h3>No favorites yet</h3>
+    <p>Start adding events to your favorites to see them here!</p>
+    <button mat-raised-button color="primary" routerLink="/events">
+      <mat-icon>search</mat-icon>
+      Browse Events
+    </button>
+  </div>
+</div>

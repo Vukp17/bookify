@@ -1,0 +1,204 @@
+<div class="event-details-container" *ngIf="!isLoading && event">
+  <!-- Header with back button -->
+  <div class="header-actions">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="spacer"></span>
+    <button mat-icon-button (click)="toggleFavorite()">
+      <mat-icon [class.favorited]="event.isFavorite">
+        {{ event.isFavorite ? 'favorite' : 'favorite_border' }}
+      </mat-icon>
+    </button>
+  </div>
+
+  <!-- Event Image -->
+  <div class="event-hero" [style.background-image]="'url(' + (event.imageUrl || 'https://via.placeholder.com/1200x400') + ')'">
+    <div class="hero-overlay">
+      <mat-chip class="category-chip">
+        <mat-icon>{{ event.category.icon }}</mat-icon>
+        {{ event.category.name }}
+      </mat-chip>
+      <h1>{{ event.title }}</h1>
+      <div class="rating-info" *ngIf="averageRating > 0">
+        <mat-icon>star</mat-icon>
+        <span>{{ averageRating }} ({{ totalReviews }} reviews)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-layout">
+    <!-- Main Content -->
+    <div class="main-content">
+      <mat-tab-group [(selectedIndex)]="selectedTab">
+        <!-- Overview Tab -->
+        <mat-tab label="Overview">
+          <div class="tab-content">
+            <section class="section">
+              <h2>
+                <mat-icon>info</mat-icon>
+                About This Event
+              </h2>
+              <p>{{ event.description }}</p>
+            </section>
+
+            <section class="section" *ngIf="event.agenda">
+              <h2>
+                <mat-icon>schedule</mat-icon>
+                Agenda
+              </h2>
+              <p class="agenda">{{ event.agenda }}</p>
+            </section>
+
+            <section class="section" *ngIf="event.speakers && event.speakers.length > 0">
+              <h2>
+                <mat-icon>record_voice_over</mat-icon>
+                Speakers
+              </h2>
+              <mat-chip-set>
+                <mat-chip *ngFor="let speaker of event.speakers">
+                  <mat-icon>person</mat-icon>
+                  {{ speaker }}
+                </mat-chip>
+              </mat-chip-set>
+            </section>
+          </div>
+        </mat-tab>
+
+        <!-- Tickets Tab -->
+        <mat-tab label="Tickets">
+          <div class="tab-content">
+            <section class="section">
+              <h2>
+                <mat-icon>confirmation_number</mat-icon>
+                Available Tickets
+              </h2>
+              <div class="ticket-types">
+                <mat-card *ngFor="let ticket of event.ticketTypes" class="ticket-card">
+                  <mat-card-header>
+                    <mat-card-title>{{ ticket.name }}</mat-card-title>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <p *ngIf="ticket.description">{{ ticket.description }}</p>
+                    <div class="ticket-info">
+                      <div class="price">${{ ticket.price }}</div>
+                      <div class="availability">
+                        <mat-icon [color]="ticket.available > 0 ? 'primary' : 'warn'">
+                          {{ ticket.available > 0 ? 'check_circle' : 'cancel' }}
+                        </mat-icon>
+                        <span>{{ ticket.available }} / {{ ticket.quantity }} available</span>
+                      </div>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </section>
+          </div>
+        </mat-tab>
+
+        <!-- Reviews Tab -->
+        <mat-tab label="Reviews ({{ totalReviews }})">
+          <div class="tab-content">
+            <section class="section">
+              <h2>
+                <mat-icon>rate_review</mat-icon>
+                Customer Reviews
+              </h2>
+              
+              <div class="reviews-summary" *ngIf="averageRating > 0">
+                <div class="rating-large">
+                  <span class="rating-number">{{ averageRating }}</span>
+                  <div class="stars">
+                    <mat-icon *ngFor="let star of getRatingStars(averageRating)">{{ star }}</mat-icon>
+                  </div>
+                  <p>Based on {{ totalReviews }} reviews</p>
+                </div>
+              </div>
+
+              <div class="reviews-list">
+                <mat-card *ngFor="let review of reviews" class="review-card">
+                  <mat-card-header>
+                    <mat-icon mat-card-avatar>account_circle</mat-icon>
+                    <mat-card-title>{{ review.userName || 'Anonymous' }}</mat-card-title>
+                    <mat-card-subtitle>
+                      <div class="review-stars">
+                        <mat-icon *ngFor="let star of getRatingStars(review.rating)">{{ star }}</mat-icon>
+                      </div>
+                      <small>{{ review.createdAt | date }}</small>
+                    </mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content *ngIf="review.comment">
+                    <p>{{ review.comment }}</p>
+                  </mat-card-content>
+                </mat-card>
+
+                <div *ngIf="reviews.length === 0" class="no-reviews">
+                  <mat-icon>rate_review</mat-icon>
+                  <p>No reviews yet. Be the first to review this event!</p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <mat-card class="booking-card">
+        <mat-card-content>
+          <div class="detail-row">
+            <mat-icon>event</mat-icon>
+            <div>
+              <strong>Date</strong>
+              <p>{{ formatDate(event.date) }}</p>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <mat-icon>access_time</mat-icon>
+            <div>
+              <strong>Time</strong>
+              <p>{{ event.startTime }} - {{ event.endTime }}</p>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <mat-icon>location_on</mat-icon>
+            <div>
+              <strong>Location</strong>
+              <p>{{ event.location }}</p>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <mat-icon>people</mat-icon>
+            <div>
+              <strong>Availability</strong>
+              <p>{{ event.availableSeats }} / {{ event.totalSeats }} seats</p>
+            </div>
+          </div>
+
+          <mat-divider class="my-2"></mat-divider>
+
+          <div class="price-info">
+            <span>Starting from</span>
+            <h2>${{ event.ticketTypes[0]?.price || 0 }}</h2>
+          </div>
+
+          <button 
+            mat-raised-button 
+            color="primary" 
+            class="full-width" 
+            (click)="bookEvent()"
+            [disabled]="event.availableSeats === 0">
+            <mat-icon>shopping_cart</mat-icon>
+            {{ event.availableSeats > 0 ? 'Book Now' : 'Sold Out' }}
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
+
+<app-loading *ngIf="isLoading" message="Loading event details..."></app-loading>

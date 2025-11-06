@@ -1,0 +1,56 @@
+<mat-toolbar color="primary" class="header">
+  <button mat-icon-button (click)="onToggleSidenav()" *ngIf="isAuthenticated">
+    <mat-icon>menu</mat-icon>
+  </button>
+  
+  <span class="logo" (click)="navigateTo('/events')" style="cursor: pointer;">
+    <mat-icon>event</mat-icon>
+    Bookify Events
+  </span>
+  
+  <span class="spacer"></span>
+  
+  <div class="nav-buttons">
+    <button mat-button (click)="navigateTo('/events')">
+      <mat-icon>event_available</mat-icon>
+      Events
+    </button>
+    
+    <ng-container *ngIf="isAuthenticated">
+      <button mat-button (click)="navigateTo('/profile/bookings')">
+        <mat-icon>confirmation_number</mat-icon>
+        My Bookings
+      </button>
+      
+      <button mat-button (click)="navigateTo('/profile/favorites')">
+        <mat-icon>favorite</mat-icon>
+        Favorites
+      </button>
+      
+      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item (click)="navigateTo('/profile')">
+          <mat-icon>person</mat-icon>
+          <span>Profile</span>
+        </button>
+        <button mat-menu-item (click)="onLogout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+    </ng-container>
+    
+    <ng-container *ngIf="!isAuthenticated">
+      <button mat-button (click)="navigateTo('/auth/login')">
+        <mat-icon>login</mat-icon>
+        Login
+      </button>
+      <button mat-raised-button color="accent" (click)="navigateTo('/auth/register')">
+        Register
+      </button>
+    </ng-container>
+  </div>
+</mat-toolbar>

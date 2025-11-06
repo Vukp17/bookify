@@ -1,0 +1,272 @@
+.event-details-container {
+  min-height: calc(100vh - 64px);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  padding: 16px 24px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-actions mat-icon.favorited {
+  color: #e91e63;
+}
+
+.event-hero {
+  height: 400px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+  padding: 40px;
+  color: white;
+}
+
+.hero-overlay h1 {
+  font-size: 36px;
+  margin: 16px 0 8px 0;
+}
+
+.category-chip {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.rating-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+}
+
+.rating-info mat-icon {
+  color: #ff9800;
+}
+
+.content-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.main-content {
+  min-width: 0;
+}
+
+.tab-content {
+  padding: 24px 0;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.section h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.section p {
+  line-height: 1.8;
+  color: #666;
+}
+
+.agenda {
+  white-space: pre-line;
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+mat-chip-set {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ticket-types {
+  display: grid;
+  gap: 16px;
+}
+
+.ticket-card {
+  transition: transform 0.2s;
+}
+
+.ticket-card:hover {
+  transform: translateX(4px);
+}
+
+.ticket-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.ticket-info .price {
+  font-size: 24px;
+  font-weight: 500;
+  color: #4caf50;
+}
+
+.ticket-info .availability {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #666;
+}
+
+.reviews-summary {
+  background: #f5f5f5;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.rating-large {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.rating-number {
+  font-size: 48px;
+  font-weight: 500;
+  color: #ff9800;
+}
+
+.stars {
+  display: flex;
+  gap: 4px;
+}
+
+.stars mat-icon {
+  color: #ff9800;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-card mat-card-header {
+  margin-bottom: 16px;
+}
+
+.review-stars {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.review-stars mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #ff9800;
+}
+
+.no-reviews {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+.no-reviews mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+
+.sidebar {
+  position: sticky;
+  top: 80px;
+  height: fit-content;
+}
+
+.booking-card {
+  padding: 16px;
+}
+
+.detail-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.detail-row mat-icon {
+  color: #3f51b5;
+  margin-top: 4px;
+}
+
+.detail-row strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.detail-row p {
+  margin: 0;
+  color: #666;
+}
+
+.price-info {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.price-info span {
+  color: #666;
+  font-size: 14px;
+}
+
+.price-info h2 {
+  margin: 8px 0;
+  color: #4caf50;
+  font-size: 32px;
+}
+
+.my-2 {
+  margin: 16px 0;
+}
+
+@media (max-width: 1024px) {
+  .content-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .event-hero {
+    height: 300px;
+  }
+
+  .hero-overlay h1 {
+    font-size: 24px;
+  }
+}

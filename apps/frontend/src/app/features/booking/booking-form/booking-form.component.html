@@ -1,0 +1,141 @@
+<div class="booking-container" *ngIf="!isLoading && event">
+  <mat-stepper linear #stepper>
+    <!-- Step 1: Select Tickets -->
+    <mat-step [stepControl]="bookingForm">
+      <form [formGroup]="bookingForm">
+        <ng-template matStepLabel>Select Tickets</ng-template>
+        
+        <mat-card class="step-card">
+          <mat-card-header>
+            <mat-card-title>{{ event.title }}</mat-card-title>
+            <mat-card-subtitle>
+              <mat-icon>event</mat-icon>
+              {{ event.date | date }} at {{ event.startTime }}
+            </mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <mat-form-field class="full-width" appearance="outline">
+              <mat-label>Select Ticket Type</mat-label>
+              <mat-select formControlName="ticketTypeId">
+                <mat-option *ngFor="let ticket of event.ticketTypes" [value]="ticket.id" [disabled]="ticket.available === 0">
+                  <div class="ticket-option">
+                    <span>{{ ticket.name }} - ${{ ticket.price }}</span>
+                    <small>({{ ticket.available }} available)</small>
+                  </div>
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="bookingForm.get('ticketTypeId')?.hasError('required')">
+                Please select a ticket type
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="full-width" appearance="outline">
+              <mat-label>Quantity</mat-label>
+              <input matInput type="number" formControlName="quantity" min="1" max="10">
+              <mat-error *ngIf="bookingForm.get('quantity')?.hasError('required')">
+                Quantity is required
+              </mat-error>
+              <mat-error *ngIf="bookingForm.get('quantity')?.hasError('min')">
+                Minimum 1 ticket
+              </mat-error>
+              <mat-error *ngIf="bookingForm.get('quantity')?.hasError('max')">
+                Maximum 10 tickets per booking
+              </mat-error>
+            </mat-form-field>
+
+            <div class="total-section" *ngIf="selectedTicketType">
+              <mat-divider></mat-divider>
+              <div class="total-row">
+                <span>Subtotal</span>
+                <span>${{ getTotalPrice() }}</span>
+              </div>
+              <div class="total-row total">
+                <strong>Total</strong>
+                <strong class="total-price">${{ getTotalPrice() }}</strong>
+              </div>
+            </div>
+          </mat-card-content>
+
+          <mat-card-actions>
+            <button mat-button (click)="cancel()">Cancel</button>
+            <button mat-raised-button color="primary" matStepperNext [disabled]="bookingForm.invalid">
+              Continue
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </form>
+    </mat-step>
+
+    <!-- Step 2: Confirm Booking -->
+    <mat-step>
+      <ng-template matStepLabel>Confirm</ng-template>
+      
+      <mat-card class="step-card">
+        <mat-card-header>
+          <mat-card-title>Review Your Booking</mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="booking-summary">
+            <h3>Event Details</h3>
+            <div class="summary-row">
+              <span>Event:</span>
+              <strong>{{ event.title }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Date:</span>
+              <strong>{{ event.date | date:'fullDate' }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Time:</span>
+              <strong>{{ event.startTime }} - {{ event.endTime }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Location:</span>
+              <strong>{{ event.location }}</strong>
+            </div>
+
+            <mat-divider class="my-3"></mat-divider>
+
+            <h3>Ticket Details</h3>
+            <div class="summary-row">
+              <span>Ticket Type:</span>
+              <strong>{{ selectedTicketType?.name }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Quantity:</span>
+              <strong>{{ bookingForm.get('quantity')?.value }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Price per ticket:</span>
+              <strong>${{ selectedTicketType?.price }}</strong>
+            </div>
+
+            <mat-divider class="my-3"></mat-divider>
+
+            <div class="summary-row total">
+              <span><strong>Total Amount:</strong></span>
+              <span class="total-price"><strong>${{ getTotalPrice() }}</strong></span>
+            </div>
+
+            <mat-card class="info-card mt-3">
+              <mat-icon>info</mat-icon>
+              <p>You will receive a confirmation email with your booking details and tickets after completing this booking.</p>
+            </mat-card>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="isLoading">
+            <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+            {{ isLoading ? 'Processing...' : 'Confirm Booking' }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </mat-step>
+  </mat-stepper>
+</div>
+
+<app-loading *ngIf="isLoading && !event" message="Loading booking form..."></app-loading>

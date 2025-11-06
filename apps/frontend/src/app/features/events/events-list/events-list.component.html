@@ -1,0 +1,134 @@
+<div class="events-container">
+  <!-- Filter Section -->
+  <mat-card class="filter-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>filter_list</mat-icon>
+        Search & Filter Events
+      </mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <form [formGroup]="filterForm" class="filter-form">
+        <mat-form-field class="full-width" appearance="outline">
+          <mat-label>Search</mat-label>
+          <input matInput formControlName="search" placeholder="Search by title or description">
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <div class="filter-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Category</mat-label>
+            <mat-select formControlName="category">
+              <mat-option value="">All Categories</mat-option>
+              <mat-option *ngFor="let category of categories" [value]="category.id">
+                <mat-icon>{{ category.icon }}</mat-icon>
+                {{ category.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Location</mat-label>
+            <input matInput formControlName="location" placeholder="City or venue">
+            <mat-icon matPrefix>location_on</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-row">
+          <mat-form-field appearance="outline">
+            <mat-label>From Date</mat-label>
+            <input matInput [matDatepicker]="fromPicker" formControlName="dateFrom">
+            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>To Date</mat-label>
+            <input matInput [matDatepicker]="toPicker" formControlName="dateTo">
+            <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+            <mat-datepicker #toPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <button mat-button color="warn" (click)="clearFilters()" type="button">
+          <mat-icon>clear</mat-icon>
+          Clear Filters
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Loading Indicator -->
+  <app-loading *ngIf="isLoading" message="Loading events..."></app-loading>
+
+  <!-- Events Grid -->
+  <div class="events-grid" *ngIf="!isLoading && events.length > 0">
+    <mat-card *ngFor="let event of events" class="event-card" (click)="viewEventDetails(event.id)">
+      <div class="event-image" [style.background-image]="'url(' + (event.imageUrl || 'https://via.placeholder.com/400x200') + ')'">
+        <button mat-icon-button class="favorite-btn" (click)="toggleFavorite(event, $event)">
+          <mat-icon [class.favorited]="event.isFavorite">
+            {{ event.isFavorite ? 'favorite' : 'favorite_border' }}
+          </mat-icon>
+        </button>
+        <mat-chip class="category-chip">
+          <mat-icon>{{ event.category.icon }}</mat-icon>
+          {{ event.category.name }}
+        </mat-chip>
+      </div>
+
+      <mat-card-content>
+        <h3>{{ event.title }}</h3>
+        <p class="short-description">{{ event.shortDescription || event.description }}</p>
+
+        <div class="event-details">
+          <div class="detail-item">
+            <mat-icon>event</mat-icon>
+            <span>{{ formatDate(event.date) }}</span>
+          </div>
+          <div class="detail-item">
+            <mat-icon>access_time</mat-icon>
+            <span>{{ event.startTime }} - {{ event.endTime }}</span>
+          </div>
+          <div class="detail-item">
+            <mat-icon>location_on</mat-icon>
+            <span>{{ event.location }}</span>
+          </div>
+        </div>
+
+        <div class="event-footer">
+          <div class="rating" *ngIf="event.averageRating">
+            <mat-icon>star</mat-icon>
+            <span>{{ event.averageRating }} ({{ event.reviewCount }})</span>
+          </div>
+          <div class="price">
+            <strong>From ${{ event.ticketTypes[0]?.price || 0 }}</strong>
+          </div>
+        </div>
+
+        <div class="availability">
+          <mat-progress-bar 
+            mode="determinate" 
+            [value]="(event.availableSeats / event.totalSeats) * 100"
+            [color]="event.availableSeats > event.totalSeats * 0.3 ? 'primary' : 'warn'">
+          </mat-progress-bar>
+          <small>{{ event.availableSeats }} / {{ event.totalSeats }} seats available</small>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="viewEventDetails(event.id)">
+          <mat-icon>info</mat-icon>
+          View Details
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- No Results -->
+  <div class="no-results" *ngIf="!isLoading && events.length === 0">
+    <mat-icon>event_busy</mat-icon>
+    <h3>No events found</h3>
+    <p>Try adjusting your filters or check back later for new events.</p>
+  </div>
+</div>
