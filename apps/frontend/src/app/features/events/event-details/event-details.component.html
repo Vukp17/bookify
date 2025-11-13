@@ -155,8 +155,19 @@
             </div>
           </div>
 
+          <div class="detail-row" *ngIf="event.speakers && event.speakers.length > 0">
+            <div>
+              <strong>Speakers</strong>
+              <div class="speakers-list">
+                <mat-chip *ngFor="let speaker of event.speakers">
+                  <mat-icon>person</mat-icon>
+                  {{ speaker }}
+                </mat-chip>
+              </div>
+            </div>
+          </div>
+
           <div class="detail-row">
-            <mat-icon>access_time</mat-icon>
             <div>
               <strong>Time</strong>
               <p>{{ event.startTime }} - {{ event.endTime }}</p>

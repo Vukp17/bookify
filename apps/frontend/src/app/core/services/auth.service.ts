@@ -17,69 +17,20 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   register(data: RegisterRequest): Observable<AuthResponse> {
-    // TODO: Integrate with backend API
-    // return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data);
-    
-    // Stub implementation
-    return of({
-      user: {
-        id: '1',
-        email: data.email,
-        username: data.username,
-        role: 'user',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      token: 'mock-jwt-token'
-    });
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data);
   }
 
   login(data: LoginRequest): Observable<AuthResponse> {
-    // TODO: Integrate with backend API
-    // return this.http.post<AuthResponse>(`${this.apiUrl}/login`, data);
-    
-    // Stub implementation
-    return of({
-      user: {
-        id: '1',
-        email: data.email,
-        username: 'mockuser',
-        role: 'user',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      token: 'mock-jwt-token'
-    });
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, data);
   }
 
   logout(): Observable<void> {
-    // TODO: Integrate with backend API
-    // return this.http.post<void>(`${this.apiUrl}/logout`, {});
-    
-    // Stub implementation
+    this.removeToken();
     return of(undefined);
   }
 
   getCurrentUser(): Observable<AuthResponse> {
-    // TODO: Integrate with backend API
-    // return this.http.get<AuthResponse>(`${this.apiUrl}/me`);
-    
-    // Stub implementation
-    const token = this.getToken();
-    if (token) {
-      return of({
-        user: {
-          id: '1',
-          email: 'user@example.com',
-          username: 'mockuser',
-          role: 'user',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
-        token: token
-      });
-    }
-    throw new Error('Not authenticated');
+    return this.http.get<AuthResponse>(`${this.apiUrl}/me`);
   }
 
   // Local storage helpers
