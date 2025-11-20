@@ -1,6 +1,7 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { User } from '../../../core/models';
 
 @Component({
   selector: 'app-header',
@@ -10,6 +11,7 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class HeaderComponent {
   @Input() isAuthenticated = false;
+  @Input() currentUser: User | null = null;
   @Output() toggleSidenav = new EventEmitter<void>();
 
   constructor(

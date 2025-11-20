@@ -77,9 +77,9 @@ export class BookingFormComponent implements OnInit {
       };
 
       this.bookingService.createBooking(bookingData).subscribe({
-        next: (confirmation) => {
+        next: (booking) => {
           this.isLoading = false;
-          this.snackBar.open(confirmation.message, 'Close', { duration: 5000 });
+          this.snackBar.open(`Booking confirmed! Reference: ${booking.bookingReference}`, 'Close', { duration: 5000 });
           this.router.navigate(['/profile/bookings']);
         },
         error: () => {

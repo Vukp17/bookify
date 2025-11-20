@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from './core/services/auth.service';
+import { User } from './core/models';
 
 @Component({
   selector: 'app-root',
@@ -10,10 +11,14 @@ import { AuthService } from './core/services/auth.service';
 export class AppComponent implements OnInit {
   title = 'Bookify Events';
   isAuthenticated = false;
+  currentUser: User | null = null;
 
   constructor(private authService: AuthService) {}
 
   ngOnInit() {
-    this.isAuthenticated = this.authService.isAuthenticated();
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+      this.isAuthenticated = !!user;
+    });
   }
 }

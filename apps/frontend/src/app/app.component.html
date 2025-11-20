@@ -1,10 +1,9 @@
 <div>
   <div class="app-container">
-  <app-header [isAuthenticated]="isAuthenticated"></app-header>
+  <app-header [isAuthenticated]="isAuthenticated" [currentUser]="currentUser"></app-header>
   
   <main class="main-content">
     <router-outlet></router-outlet>
   </main>
 </div>
-  <p>Your one-stop solution for managing and discovering books.</p>
 </div>

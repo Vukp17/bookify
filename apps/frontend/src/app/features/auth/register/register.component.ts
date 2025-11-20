@@ -44,7 +44,6 @@ export class RegisterComponent implements OnInit {
       
       this.authService.register(registerData).subscribe({
         next: (response) => {
-          this.authService.setToken(response.token);
           this.snackBar.open('Registration successful! Welcome to Bookify!', 'Close', { duration: 3000 });
           this.router.navigate(['/events']);
         },

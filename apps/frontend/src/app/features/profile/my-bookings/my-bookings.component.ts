@@ -56,12 +56,13 @@ export class MyBookingsComponent implements OnInit {
   cancelBooking(booking: Booking): void {
     if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
       this.bookingService.cancelBooking({ bookingId: booking.id }).subscribe({
-        next: (response) => {
-          this.snackBar.open(response.message, 'Close', { duration: 5000 });
+        next: (updatedBooking) => {
+          this.snackBar.open('Booking cancelled successfully. Refund will be processed within 7 business days.', 'Close', { duration: 5000 });
           this.loadBookings();
         },
-        error: () => {
-          this.snackBar.open('Failed to cancel booking', 'Close', { duration: 3000 });
+        error: (error) => {
+          const message = error.error?.message || 'Failed to cancel booking';
+          this.snackBar.open(message, 'Close', { duration: 3000 });
         }
       });
     }

@@ -6,6 +6,14 @@ import { PrismaService } from '../prisma.service';
 import { UsersService } from './users.service';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { EventsService } from './events.service';
+import { EventsController } from './events.controller';
+import { BookingsService } from './bookings.service';
+import { BookingsController } from './bookings.controller';
+import { FavoritesService } from './favorites.service';
+import { FavoritesController } from './favorites.controller';
+import { ReviewsService } from './reviews.service';
+import { ReviewsController } from './reviews.controller';
 
 @Module({
   imports: [
@@ -14,7 +22,23 @@ import { AuthController } from './auth.controller';
       signOptions: { expiresIn: '7d' },
     }),
   ],
-  controllers: [AppController, AuthController],
-  providers: [AppService, PrismaService, UsersService, AuthService],
+  controllers: [
+    AppController,
+    AuthController,
+    EventsController,
+    BookingsController,
+    FavoritesController,
+    ReviewsController,
+  ],
+  providers: [
+    AppService,
+    PrismaService,
+    UsersService,
+    AuthService,
+    EventsService,
+    BookingsService,
+    FavoritesService,
+    ReviewsService,
+  ],
 })
 export class AppModule {}

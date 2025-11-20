@@ -1,24 +1,3 @@
-model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  posts     Post[]
-}
-
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String
-  authorId  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  author    User     @relation(fields: [authorId], references: [id])
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -26,4 +5,134 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("user") // user, organizer, admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  organizedEvents Event[]    @relation("OrganizerEvents")
+  bookings        Booking[]
+  favorites       Favorite[]
+  reviews         Review[]
+}
+
+model Event {
+  id               Int      @id @default(autoincrement())
+  title            String
+  description      String   @db.Text
+  shortDescription String?  @db.Text
+  date             DateTime
+  startTime        String
+  endTime          String
+  location         String
+  imageUrl         String?
+  agenda           String?  @db.Text
+  speakers         String[] // Array of speaker names
+  totalSeats       Int
+  availableSeats   Int
+  status           String   @default("published") // draft, published, cancelled, completed
+  organizerId      Int
+  categoryId       Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  organizer   User         @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  category    Category     @relation(fields: [categoryId], references: [id])
+  ticketTypes TicketType[]
+  bookings    Booking[]
+  favorites   Favorite[]
+  reviews     Review[]
+  
+  @@index([categoryId])
+  @@index([organizerId])
+  @@index([date])
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  icon        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  events Event[]
+}
+
+model TicketType {
+  id          Int      @id @default(autoincrement())
+  eventId     Int
+  name        String
+  price       Float
+  description String?
+  quantity    Int
+  available   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+  
+  @@index([eventId])
+}
+
+model Booking {
+  id                   Int      @id @default(autoincrement())
+  userId               Int
+  eventId              Int
+  ticketTypeId         Int
+  quantity             Int
+  totalAmount          Float
+  status               String   @default("confirmed") // pending, confirmed, cancelled, refunded
+  paymentStatus        String   @default("completed") // pending, completed, failed, refunded
+  bookingReference     String   @unique
+  cancellationDeadline DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  
+  user       User       @relation(fields: [userId], references: [id])
+  event      Event      @relation(fields: [eventId], references: [id])
+  ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
+  
+  @@index([userId])
+  @@index([eventId])
+  @@index([bookingReference])
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  eventId   Int
+  createdAt DateTime @default(now())
+  
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  eventId   Int
+  rating    Int      // 1-5
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, eventId])
+  @@index([eventId])
 }

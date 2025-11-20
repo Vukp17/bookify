@@ -27,15 +27,33 @@
         Favorites
       </button>
       
-      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+      <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
         <mat-icon>account_circle</mat-icon>
+        <span class="user-email">{{ currentUser?.email || 'User' }}</span>
+        <mat-icon>arrow_drop_down</mat-icon>
       </button>
       
       <mat-menu #userMenu="matMenu">
+        <div class="user-info" mat-menu-item disabled>
+          <div class="user-details">
+            <strong>{{ currentUser?.username || currentUser?.email }}</strong>
+            <small>{{ currentUser?.email }}</small>
+          </div>
+        </div>
+        <mat-divider></mat-divider>
         <button mat-menu-item (click)="navigateTo('/profile')">
           <mat-icon>person</mat-icon>
           <span>Profile</span>
         </button>
+        <button mat-menu-item (click)="navigateTo('/profile/bookings')">
+          <mat-icon>confirmation_number</mat-icon>
+          <span>My Bookings</span>
+        </button>
+        <button mat-menu-item (click)="navigateTo('/profile/favorites')">
+          <mat-icon>favorite</mat-icon>
+          <span>Favorites</span>
+        </button>
+        <mat-divider></mat-divider>
         <button mat-menu-item (click)="onLogout()">
           <mat-icon>logout</mat-icon>
           <span>Logout</span>

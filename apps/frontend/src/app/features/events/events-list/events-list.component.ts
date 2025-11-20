@@ -64,8 +64,8 @@ export class EventsListComponent implements OnInit {
     const filters: EventFilters = this.filterForm.value;
     
     this.eventService.getEvents(filters).subscribe({
-      next: (response) => {
-        this.events = response.events;
+      next: (events) => {
+        this.events = events;
         this.isLoading = false;
       },
       error: () => {

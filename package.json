@@ -15,7 +15,8 @@
     "db:down": "docker-compose down",
     "prisma:generate": "prisma generate --schema=apps/backend/prisma/schema.prisma",
     "prisma:migrate:dev": "prisma migrate dev --schema=apps/backend/prisma/schema.prisma --name init",
-    "prisma:studio": "prisma studio --schema=apps/backend/prisma/schema.prisma"
+    "prisma:studio": "prisma studio --schema=apps/backend/prisma/schema.prisma",
+    "prisma:seed": "ts-node apps/backend/prisma/seed.ts"
   },
   "dependencies": {
     "@angular/animations": "^19.0.0",

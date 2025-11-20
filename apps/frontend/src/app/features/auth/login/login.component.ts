@@ -34,7 +34,6 @@ export class LoginComponent implements OnInit {
       this.isLoading = true;
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
-          this.authService.setToken(response.token);
           this.snackBar.open('Login successful!', 'Close', { duration: 3000 });
           this.router.navigate(['/events']);
         },
