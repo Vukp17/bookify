@@ -1,0 +1,159 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, pre-production, production ]
+  pull_request:
+    branches: [ main, pre-production, production ]
+
+jobs:
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run frontend linter
+        run: npm run lint
+
+      - name: Run frontend tests with coverage
+        run: npx nx test frontend --coverage --watch=false
+
+      - name: Upload frontend coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: coverage/apps/frontend
+          retention-days: 30
+
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: bookify_test
+          POSTGRES_PASSWORD: bookify_test
+          POSTGRES_DB: bookify_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup test database
+        env:
+          DATABASE_URL: postgresql://bookify_test:bookify_test@localhost:5432/bookify_test?schema=public
+        run: |
+          npx prisma generate --schema=apps/backend/prisma/schema.prisma
+          npx prisma migrate deploy --schema=apps/backend/prisma/schema.prisma
+
+      - name: Run backend linter
+        run: npm run backend:lint
+
+      - name: Run backend tests with coverage
+        env:
+          DATABASE_URL: postgresql://bookify_test:bookify_test@localhost:5432/bookify_test?schema=public
+          JWT_SECRET: test-secret-key
+        run: npx nx test backend --coverage --watch=false
+
+      - name: Upload backend coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: coverage/apps/backend
+          retention-days: 30
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [frontend-tests, backend-tests]
+    if: always()
+    
+    steps:
+      - name: Download frontend coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: ./coverage/frontend
+
+      - name: Download backend coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: ./coverage/backend
+
+      - name: Display test summary
+        run: |
+          echo "✅ CI/CD Pipeline completed"
+          echo "🌿 Branch: ${{ github.ref_name }}"
+          echo "📊 Coverage reports available in artifacts"
+          echo "Frontend coverage: ./coverage/frontend"
+          echo "Backend coverage: ./coverage/backend"
+  
+  deploy:
+    name: Deploy Application
+    needs: [frontend-tests, backend-tests]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ github.ref_name }}" == "production" ]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "url=https://bookify.production.example.com" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" == "pre-production" ]; then
+            echo "environment=pre-production" >> $GITHUB_OUTPUT
+            echo "url=https://bookify.staging.example.com" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" == "main" ]; then
+            echo "environment=development" >> $GITHUB_OUTPUT
+            echo "url=https://bookify.dev.example.com" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Deploy to ${{ steps.env.outputs.environment }}
+        run: |
+          echo "🚀 Deploying to ${{ steps.env.outputs.environment }}"
+          echo "🌐 URL: ${{ steps.env.outputs.url }}"
+          echo "Branch: ${{ github.ref_name }}"
+          # Add your deployment commands here
+          # Examples:
+          # - Docker build and push
+          # - Kubernetes apply
+          # - SSH deployment
+          # - Cloud provider CLI (AWS, Azure, GCP)
+      
+      - name: Deployment summary
+        run: |
+          echo "✅ Deployment completed"
+          echo "Environment: ${{ steps.env.outputs.environment }}"
+          echo "URL: ${{ steps.env.outputs.url }}"
