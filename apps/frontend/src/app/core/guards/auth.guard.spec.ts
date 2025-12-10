@@ -4,12 +4,16 @@ import { authGuard } from './auth.guard';
 import { AuthService } from '../services/auth.service';
 
 describe('authGuard', () => {
-  let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockAuthService: jest.Mocked<AuthService>;
+  let mockRouter: jest.Mocked<Router>;
 
   beforeEach(() => {
-    mockAuthService = jasmine.createSpyObj('AuthService', ['isAuthenticated']);
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockAuthService = {
+      isAuthenticated: jest.fn(),
+    } as any;
+    mockRouter = {
+      navigate: jest.fn(),
+    } as any;
 
     TestBed.configureTestingModule({
       providers: [
@@ -20,7 +24,7 @@ describe('authGuard', () => {
   });
 
   it('should allow access when user is authenticated', () => {
-    mockAuthService.isAuthenticated.and.returnValue(true);
+    mockAuthService.isAuthenticated.mockReturnValue(true);
 
     const result = TestBed.runInInjectionContext(() => 
       authGuard({} as any, {} as any)
@@ -31,7 +35,7 @@ describe('authGuard', () => {
   });
 
   it('should redirect to login when user is not authenticated', () => {
-    mockAuthService.isAuthenticated.and.returnValue(false);
+    mockAuthService.isAuthenticated.mockReturnValue(false);
 
     const result = TestBed.runInInjectionContext(() => 
       authGuard({} as any, {} as any)

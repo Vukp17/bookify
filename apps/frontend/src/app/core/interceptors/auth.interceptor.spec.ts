@@ -8,12 +8,17 @@ import { AuthService } from '../services/auth.service';
 describe('AuthInterceptor', () => {
   let httpMock: HttpTestingController;
   let httpClient: HttpClient;
-  let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockAuthService: jest.Mocked<AuthService>;
+  let mockRouter: jest.Mocked<Router>;
 
   beforeEach(() => {
-    mockAuthService = jasmine.createSpyObj('AuthService', ['getToken', 'removeToken']);
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockAuthService = {
+      getToken: jest.fn(),
+      removeToken: jest.fn(),
+    } as any;
+    mockRouter = {
+      navigate: jest.fn(),
+    } as any;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -37,7 +42,7 @@ describe('AuthInterceptor', () => {
   });
 
   it('should add Authorization header when token exists', () => {
-    mockAuthService.getToken.and.returnValue('test-token');
+    mockAuthService.getToken.mockReturnValue('test-token');
 
     httpClient.get('/api/test').subscribe();
 
@@ -48,7 +53,7 @@ describe('AuthInterceptor', () => {
   });
 
   it('should not add Authorization header when token does not exist', () => {
-    mockAuthService.getToken.and.returnValue(null);
+    mockAuthService.getToken.mockReturnValue(null);
 
     httpClient.get('/api/test').subscribe();
 
@@ -58,7 +63,7 @@ describe('AuthInterceptor', () => {
   });
 
   it('should handle 401 error and redirect to login', () => {
-    mockAuthService.getToken.and.returnValue('test-token');
+    mockAuthService.getToken.mockReturnValue('test-token');
 
     httpClient.get('/api/test').subscribe({
       error: () => {
