@@ -40,7 +40,7 @@ export class RegisterComponent implements OnInit {
   onSubmit(): void {
     if (this.registerForm.valid) {
       this.isLoading = true;
-      const { confirmPassword, ...registerData } = this.registerForm.value;
+      const { confirmPassword: _confirmPassword, ...registerData } = this.registerForm.value;
       
       this.authService.register(registerData).subscribe({
         next: (response) => {

@@ -36,7 +36,7 @@
     "lint": {
       "executor": "@nx/eslint:lint",
       "options": {
-        "lintFilePatterns": ["apps/backend/**/*.ts"]
+        "lintFilePatterns": ["apps/backend/src/**/*.ts"]
       }
     },
     "test": {

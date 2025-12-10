@@ -56,7 +56,7 @@ export class MyBookingsComponent implements OnInit {
   cancelBooking(booking: Booking): void {
     if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
       this.bookingService.cancelBooking({ bookingId: booking.id }).subscribe({
-        next: (updatedBooking) => {
+        next: (_updatedBooking) => {
           this.snackBar.open('Booking cancelled successfully. Refund will be processed within 7 business days.', 'Close', { duration: 5000 });
           this.loadBookings();
         },
