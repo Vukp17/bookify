@@ -7,10 +7,10 @@ const localStorageMock = {
   removeItem: jest.fn(),
   clear: jest.fn(),
 };
-global.localStorage = localStorageMock as any;
+(global as any).localStorage = localStorageMock;
 
 // Reset localStorage mock before each test
-beforeEach(() => {
+(global as any).beforeEach(() => {
   localStorageMock.getItem.mockClear();
   localStorageMock.setItem.mockClear();
   localStorageMock.removeItem.mockClear();
