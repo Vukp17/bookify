@@ -30,11 +30,21 @@ jobs:
       - name: Run frontend tests with coverage
         run: npx nx test frontend --coverage --watch=false
 
+      - name: Build frontend application
+        run: npx nx build frontend --configuration=production
+
       - name: Upload frontend coverage report
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage-report
           path: coverage/apps/frontend
+          retention-days: 30
+
+      - name: Upload frontend build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: dist/apps/frontend
           retention-days: 30
 
   backend-tests:
@@ -85,11 +95,21 @@ jobs:
           JWT_SECRET: test-secret-key
         run: npx nx test backend --coverage --watch=false
 
+      - name: Build backend application
+        run: npx nx build backend --configuration=production
+
       - name: Upload backend coverage report
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage-report
           path: coverage/apps/backend
+          retention-days: 30
+
+      - name: Upload backend build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build
+          path: dist/apps/backend
           retention-days: 30
 
   test-summary:
@@ -126,6 +146,18 @@ jobs:
     if: github.event_name == 'push'
     
     steps:
+      - name: Download frontend build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: ./dist/frontend
+
+      - name: Download backend build
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-build
+          path: ./dist/backend
+
       - name: Determine environment
         id: env
         run: |
@@ -145,15 +177,20 @@ jobs:
           echo "🚀 Deploying to ${{ steps.env.outputs.environment }}"
           echo "🌐 URL: ${{ steps.env.outputs.url }}"
           echo "Branch: ${{ github.ref_name }}"
+          echo "📦 Frontend build: ./dist/frontend"
+          echo "📦 Backend build: ./dist/backend"
           # Add your deployment commands here
           # Examples:
           # - Docker build and push
           # - Kubernetes apply
           # - SSH deployment
           # - Cloud provider CLI (AWS, Azure, GCP)
+          # - scp ./dist/frontend/* user@server:/var/www/bookify
+          # - scp ./dist/backend/* user@server:/opt/bookify-api
       
       - name: Deployment summary
         run: |
           echo "✅ Deployment completed"
           echo "Environment: ${{ steps.env.outputs.environment }}"
           echo "URL: ${{ steps.env.outputs.url }}"
+          echo "📦 Artifacts deployed from builds"
