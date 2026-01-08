@@ -21,6 +21,14 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
       - name: Install dependencies
         run: npm ci
 
@@ -76,6 +84,14 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
       - name: Install dependencies
         run: npm ci
 
@@ -112,6 +128,51 @@ jobs:
           path: dist/apps/backend
           retention-days: 30
 
+  app-build:
+    name: Build Applications
+    runs-on: ubuntu-latest
+    needs: [frontend-tests, backend-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend (production)
+        run: npx nx build frontend --configuration=production
+
+      - name: Build backend (production)
+        run: npx nx build backend --configuration=production
+
+      - name: Upload frontend build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build-production
+          path: dist/apps/frontend
+          retention-days: 30
+
+      - name: Upload backend build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build-production
+          path: dist/apps/backend
+          retention-days: 30
+
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
@@ -138,59 +199,67 @@ jobs:
           echo "📊 Coverage reports available in artifacts"
           echo "Frontend coverage: ./coverage/frontend"
           echo "Backend coverage: ./coverage/backend"
+  docker-image:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: app-build
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set image metadata
+        id: meta
+        run: |
+          echo "image=${{ secrets.DOCKER_USERNAME }}/bookify" >> $GITHUB_OUTPUT
+          echo "branch_tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          echo "sha_tag=${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.branch_tag }}
+            ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.sha_tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
   
   deploy:
     name: Deploy Application
-    needs: [frontend-tests, backend-tests]
+    needs: docker-image
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     
     steps:
-      - name: Download frontend build
-        uses: actions/download-artifact@v4
+      - name: Deploy to Hetzner via Docker
+        uses: appleboy/ssh-action@v1
         with:
-          name: frontend-build
-          path: ./dist/frontend
-
-      - name: Download backend build
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-build
-          path: ./dist/backend
-
-      - name: Determine environment
-        id: env
-        run: |
-          if [ "${{ github.ref_name }}" == "production" ]; then
-            echo "environment=production" >> $GITHUB_OUTPUT
-            echo "url=https://bookify.production.example.com" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref_name }}" == "pre-production" ]; then
-            echo "environment=pre-production" >> $GITHUB_OUTPUT
-            echo "url=https://bookify.staging.example.com" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref_name }}" == "main" ]; then
-            echo "environment=development" >> $GITHUB_OUTPUT
-            echo "url=https://bookify.dev.example.com" >> $GITHUB_OUTPUT
-          fi
-      
-      - name: Deploy to ${{ steps.env.outputs.environment }}
-        run: |
-          echo "🚀 Deploying to ${{ steps.env.outputs.environment }}"
-          echo "🌐 URL: ${{ steps.env.outputs.url }}"
-          echo "Branch: ${{ github.ref_name }}"
-          echo "📦 Frontend build: ./dist/frontend"
-          echo "📦 Backend build: ./dist/backend"
-          # Add your deployment commands here
-          # Examples:
-          # - Docker build and push
-          # - Kubernetes apply
-          # - SSH deployment
-          # - Cloud provider CLI (AWS, Azure, GCP)
-          # - scp ./dist/frontend/* user@server:/var/www/bookify
-          # - scp ./dist/backend/* user@server:/opt/bookify-api
-      
-      - name: Deployment summary
-        run: |
-          echo "✅ Deployment completed"
-          echo "Environment: ${{ steps.env.outputs.environment }}"
-          echo "URL: ${{ steps.env.outputs.url }}"
-          echo "📦 Artifacts deployed from builds"
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            set -e
+            IMAGE="${{ secrets.DOCKER_USERNAME }}/bookify:${{ github.ref_name }}"
+            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            docker pull $IMAGE
+            docker stop bookify || true
+            docker rm bookify || true
+            docker run -d --name bookify -p 80:3000 --env-file /opt/bookify/.env $IMAGE
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
