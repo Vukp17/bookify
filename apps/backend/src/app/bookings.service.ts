@@ -35,7 +35,7 @@ export class BookingsService {
     );
 
     // Create booking and update available seats in a transaction
-    const booking = await this.prisma.$transaction(async (tx) => {
+    const booking = await this.prisma.$transaction(async (tx: any) => {
       // Update ticket availability
       await tx.ticketType.update({
         where: { id: ticketTypeId },
@@ -130,7 +130,7 @@ export class BookingsService {
     }
 
     // Cancel booking and restore availability in a transaction
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: any) => {
       // Update ticket availability
       await tx.ticketType.update({
         where: { id: booking.ticketTypeId },

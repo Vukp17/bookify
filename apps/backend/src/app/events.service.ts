@@ -38,7 +38,7 @@ export class EventsService {
 
     // Calculate average rating for each event
     const eventsWithRatings = await Promise.all(
-      events.map(async (event) => {
+      events.map(async (event: any) => {
         const reviews = await this.prisma.review.findMany({
           where: { eventId: event.id },
           select: { rating: true },
@@ -46,7 +46,7 @@ export class EventsService {
 
         const averageRating =
           reviews.length > 0
-            ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+            ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
             : 0;
 
         return {
@@ -87,7 +87,7 @@ export class EventsService {
     // Calculate average rating
     const averageRating =
       event.reviews.length > 0
-        ? event.reviews.reduce((sum, r) => sum + r.rating, 0) /
+        ? event.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
           event.reviews.length
         : 0;
 

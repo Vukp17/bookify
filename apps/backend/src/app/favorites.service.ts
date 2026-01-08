@@ -41,7 +41,7 @@ export class FavoritesService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return favorites.map((fav) => ({
+    return favorites.map((fav: any) => ({
       ...fav.event,
       isFavorite: true,
     }));
