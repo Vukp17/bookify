@@ -305,7 +305,17 @@ jobs:
             docker pull $IMAGE
             docker stop bookify || true
             docker rm bookify || true
-            docker run -d --name bookify -p 80:3000 --env-file /opt/bookify/.env $IMAGE
+            ENV_FILE=/opt/bookify/.env
+            if [ ! -f "$ENV_FILE" ]; then
+              echo "ERROR: $ENV_FILE is missing on the server. Create it with your production environment variables." >&2
+              exit 1
+            fi
+            # Ensure port 8080 is free before starting
+            if ss -tlnp | grep -q ':8080 '; then
+              echo "ERROR: Port 8080 is already in use on the server. Free it or change the mapping." >&2
+              exit 1
+            fi
+            docker run -d --name bookify -p 8080:3000 --env-file "$ENV_FILE" $IMAGE
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
