@@ -291,38 +291,12 @@ jobs:
     if: github.event_name == 'push' && github.ref_name == 'main'
     
     steps:
-      - name: Prepare SSH key
-        run: |
-          set -e
-          mkdir -p .ssh
-          # Write the SSH private key as provided
-          printf "%s" "${{ secrets.HETZNER_SSH_KEY }}" > .ssh/bookify_key.tmp
-          # If the secret contains literal \n sequences, convert them to newlines
-          sed 's/\r//g' .ssh/bookify_key.tmp | sed 's/\\n/\n/g' > .ssh/bookify_key
-          rm -f .ssh/bookify_key.tmp
-          # If it still doesn't look like a PEM/OPENSSH key, try base64 decode fallback
-          if ! grep -q "BEGIN" .ssh/bookify_key; then
-            echo "Key does not contain BEGIN header; trying base64 decode..."
-            printf "%s" "${{ secrets.HETZNER_SSH_KEY }}" | base64 -d > .ssh/bookify_key || true
-          fi
-          chmod 600 .ssh/bookify_key
-          # Add host key to known_hosts to avoid interactive prompts
-          mkdir -p ~/.ssh && touch ~/.ssh/known_hosts
-          ssh-keyscan -H "${{ secrets.HETZNER_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
-          # Validate key can produce a public key (no output leaked)
-          if ! ssh-keygen -y -f .ssh/bookify_key >/dev/null 2>&1; then
-            echo "SSH key validation failed. Ensure secret HETZNER_SSH_KEY is a valid private key (PEM/OpenSSH), or provide base64-encoded key."
-            exit 1
-          fi
-
       - name: Deploy to Hetzner via Docker
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HETZNER_HOST }}
           username: ${{ secrets.HETZNER_USER }}
-          key_path: ${{ github.workspace }}/.ssh/bookify_key
-          passphrase: ${{ secrets.HETZNER_SSH_PASSPHRASE }}
-          envs: DOCKER_USERNAME,DOCKER_PASSWORD
+          key: ${{ secrets.HETZNER_SSH_KEY }}
           script: |
             set -e
             IMAGE="${{ secrets.DOCKER_USERNAME }}/bookify:${{ github.ref_name }}"
