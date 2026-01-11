@@ -131,7 +131,7 @@ jobs:
   app-build:
     name: Build Applications
     runs-on: ubuntu-latest
-    needs: [frontend-tests, backend-tests]
+    needs: [frontend-tests, backend-tests, quality-gate-check]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -199,6 +199,60 @@ jobs:
           echo "📊 Coverage reports available in artifacts"
           echo "Frontend coverage: ./coverage/frontend"
           echo "Backend coverage: ./coverage/backend"
+
+  sonarcloud-analysis:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    needs: [frontend-tests, backend-tests]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for better analysis
+
+      - name: Download frontend coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: coverage/apps/frontend
+
+      - name: Download backend coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: coverage/apps/backend
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.verbose=true
+
+  quality-gate-check:
+    name: Quality Gate Check
+    runs-on: ubuntu-latest
+    needs: sonarcloud-analysis
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Wait for Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          scanMetadataReportFile: .scannerwork/report-task.txt
+
+      - name: Quality Gate Status
+        run: |
+          echo "✅ Quality Gate passed!"
+          echo "All quality standards have been met."
   docker-image:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
@@ -241,9 +295,9 @@ jobs:
   
   deploy:
     name: Deploy Application
-    needs: docker-image
+    needs: [docker-image, quality-gate-check]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref_name == 'production'
     
     steps:
       - name: Deploy to Hetzner via Docker
