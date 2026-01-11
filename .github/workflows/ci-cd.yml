@@ -131,7 +131,7 @@ jobs:
   app-build:
     name: Build Applications
     runs-on: ubuntu-latest
-    needs: [frontend-tests, backend-tests, quality-gate-check]
+    needs: [frontend-tests, backend-tests, sonarcloud-analysis]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -201,7 +201,7 @@ jobs:
           echo "Backend coverage: ./coverage/backend"
 
   sonarcloud-analysis:
-    name: SonarCloud Analysis
+    name: SonarCloud Analysis & Quality Gate
     runs-on: ubuntu-latest
     needs: [frontend-tests, backend-tests]
     
@@ -224,7 +224,7 @@ jobs:
           path: coverage/apps/backend
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -232,17 +232,8 @@ jobs:
           args: >
             -Dsonar.verbose=true
 
-  quality-gate-check:
-    name: Quality Gate Check
-    runs-on: ubuntu-latest
-    needs: sonarcloud-analysis
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Wait for Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@cb3ed20f9fec62b4c3b8ad9e77656c6adaade913 # specific commit for stability
+        uses: SonarSource/sonarqube-quality-gate-action@cb3ed20f9fec62b4c3b8ad9e77656c6adaade913
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -295,7 +286,7 @@ jobs:
   
   deploy:
     name: Deploy Application
-    needs: [docker-image, quality-gate-check]
+    needs: [docker-image, sonarcloud-analysis]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref_name == 'production'
     
