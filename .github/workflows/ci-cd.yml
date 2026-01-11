@@ -288,15 +288,24 @@ jobs:
     name: Deploy Application
     needs: [docker-image, sonarcloud-analysis]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref_name == 'production'
+    if: github.event_name == 'push' && github.ref_name == 'main'
     
     steps:
+      - name: Prepare SSH key
+        run: |
+          set -e
+          mkdir -p .ssh
+          # Write the SSH private key, handling secrets that may contain literal \n
+          printf "%s" "${{ secrets.HETZNER_SSH_KEY }}" | sed 's/\\r//g' | sed 's/\\n/\n/g' > .ssh/bookify_key
+          chmod 600 .ssh/bookify_key
+
       - name: Deploy to Hetzner via Docker
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HETZNER_HOST }}
           username: ${{ secrets.HETZNER_USER }}
-          key: ${{ secrets.HETZNER_SSH_KEY }}
+          key_path: ./.ssh/bookify_key
+          envs: DOCKER_USERNAME,DOCKER_PASSWORD
           script: |
             set -e
             IMAGE="${{ secrets.DOCKER_USERNAME }}/bookify:${{ github.ref_name }}"
