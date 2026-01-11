@@ -297,10 +297,11 @@ jobs:
           host: ${{ secrets.HETZNER_HOST }}
           username: ${{ secrets.HETZNER_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
+          envs: DOCKER_USERNAME,DOCKER_PASSWORD
           script: |
             set -e
             IMAGE="${{ secrets.DOCKER_USERNAME }}/bookify:${{ github.ref_name }}"
-            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
             docker pull $IMAGE
             docker stop bookify || true
             docker rm bookify || true
