@@ -315,7 +315,7 @@ jobs:
               echo "ERROR: Port 8080 is already in use on the server. Free it or change the mapping." >&2
               exit 1
             fi
-            docker run -d --name bookify -p 8080:3000 --env-file "$ENV_FILE" $IMAGE
+            docker run -d --name bookify --network tick_app_network -p 8080:8080 --env-file "$ENV_FILE" $IMAGE
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
