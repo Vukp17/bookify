@@ -14,7 +14,8 @@ COPY libs ./libs
 # Generate Prisma client
 RUN npm run prisma:generate
 
-# Build both frontend and backend
+# Build both frontend and backend (disable Nx daemon for Docker)
+ENV NX_DAEMON=false
 RUN npx nx build frontend --configuration=production
 RUN npx nx build backend --configuration=production
 
