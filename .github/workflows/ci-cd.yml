@@ -297,7 +297,7 @@ jobs:
           host: ${{ secrets.HETZNER_HOST }}
           username: ${{ secrets.HETZNER_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
-          envs: DOCKER_USERNAME,DOCKER_PASSWORD
+          envs: DOCKER_USERNAME, DOCKER_PASSWORD
           script: |
             set -e
             IMAGE="${{ secrets.DOCKER_USERNAME }}/bookify:${{ github.ref_name }}"
