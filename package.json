@@ -55,7 +55,7 @@
     "@angular-eslint/eslint-plugin": "^21.1.0",
     "@angular-eslint/eslint-plugin-template": "^21.1.0",
     "@angular-eslint/template-parser": "^21.1.0",
-    "@angular/cli": "^19.0.0",
+    "@angular/cli": "^21.1.2",
     "@angular/compiler-cli": "^19.0.0",
     "@nestjs/schematics": "^10.2.0",
     "@nestjs/testing": "^10.4.0",
